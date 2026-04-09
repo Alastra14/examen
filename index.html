@@ -300,20 +300,69 @@
     .prd-sections { padding: 0 1rem 1rem; }
     .prd-sec {
       border: 1px solid var(--border); border-radius: var(--radius);
-      overflow: hidden; margin-bottom: .75rem;
+      overflow: hidden; margin-bottom: .75rem; transition: border-color .2s;
     }
+    .prd-sec.has-completion { border-color: rgba(56,139,253,.45); }
     .prd-sec-header {
       background: var(--surface); border-bottom: 1px solid var(--border);
       padding: .45rem .75rem; font-size: .78rem; font-weight: 600;
       color: var(--muted); display: flex; align-items: center; gap: .35rem;
+      transition: background .2s, color .2s;
     }
-    .prd-sec textarea {
-      width: 100%; background: var(--card); border: none;
-      color: var(--text); font-family: var(--font); font-size: .82rem;
-      line-height: 1.7; padding: .75rem; resize: vertical; outline: none;
-      min-height: 80px; display: block;
+    .prd-sec.has-completion .prd-sec-header { background: rgba(56,139,253,.09); color: var(--accent2); }
+
+    /* PRD — contenido fijo renderizado */
+    .prd-sec-readonly {
+      padding: .75rem 1rem; font-size: .82rem; line-height: 1.7;
+      border-bottom: 1px solid var(--border); background: var(--card);
     }
-    .prd-sec textarea:focus { background: #1c2230; }
+    .prd-sec-readonly .md-h1 { font-size: 1rem; font-weight: 700; color: var(--text); margin: .7rem 0 .3rem; padding-bottom: .3rem; border-bottom: 1px solid var(--border); }
+    .prd-sec-readonly .md-h2 { font-size: .92rem; font-weight: 600; color: var(--accent2); margin: .65rem 0 .25rem; }
+    .prd-sec-readonly .md-h3 { font-size: .86rem; font-weight: 600; color: var(--text); margin: .5rem 0 .2rem; }
+    .prd-sec-readonly .md-p  { margin-bottom: .4rem; }
+    .prd-sec-readonly .md-list { padding-left: 1.2rem; margin-bottom: .4rem; }
+    .prd-sec-readonly .md-list li { margin-bottom: .18rem; line-height: 1.55; }
+    .prd-sec-readonly .md-pre { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: .5rem .75rem; font-family: var(--mono); font-size: .71rem; margin: .4rem 0; white-space: pre-wrap; word-break: break-word; overflow-x: auto; }
+    .prd-sec-readonly .md-hr  { border: none; border-top: 1px solid var(--border); margin: .65rem 0; }
+
+    /* PRD — tabla */
+    .prd-table-wrap { overflow-x: auto; margin: .55rem 0; border-radius: 4px; border: 1px solid var(--border); }
+    .prd-table { width: 100%; border-collapse: collapse; font-size: .79rem; }
+    .prd-table thead tr { background: var(--surface); }
+    .prd-table th { padding: .38rem .7rem; text-align: left; font-weight: 600; font-size: .74rem; color: var(--muted); letter-spacing: .04em; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .prd-table th:last-child { border-right: none; }
+    .prd-table td { padding: .35rem .7rem; vertical-align: top; line-height: 1.55; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .prd-table td:last-child { border-right: none; }
+    .prd-table tbody tr:last-child td { border-bottom: none; }
+    .prd-table tbody tr:hover { background: rgba(56,139,253,.04); }
+
+    /* PRD — campo inline editable [COMPLETAR] */
+    .prd-inline-field {
+      display: inline-block; background: rgba(56,139,253,.1);
+      border: 1px dashed rgba(56,139,253,.5); border-radius: 3px;
+      padding: 1px 8px; min-width: 140px; color: var(--text);
+      font-family: var(--font); font-size: .82rem; outline: none;
+      transition: border-color .15s, background .15s; vertical-align: baseline;
+    }
+    .prd-inline-field:focus { background: rgba(56,139,253,.2); border-color: var(--accent); box-shadow: 0 0 0 2px rgba(56,139,253,.25); }
+    .prd-inline-field::placeholder { color: var(--muted); font-style: italic; }
+
+    /* PRD — zona de completación */
+    .prd-sec-editzone { background: rgba(56,139,253,.04); border-top: 1px solid rgba(56,139,253,.2); }
+    .prd-edit-label {
+      display: flex; align-items: center; gap: .35rem;
+      padding: .4rem .85rem; font-size: .69rem; font-weight: 700;
+      color: var(--accent2); text-transform: uppercase; letter-spacing: .08em;
+      border-bottom: 1px dashed rgba(56,139,253,.2);
+    }
+    .prd-edit-ta {
+      width: 100%; background: transparent; border: none;
+      color: var(--text); font-family: var(--font); font-size: .85rem;
+      line-height: 1.75; padding: .7rem .85rem;
+      resize: vertical; outline: none; min-height: 68px; display: block;
+    }
+    .prd-edit-ta:focus { background: rgba(56,139,253,.06); }
+    .prd-edit-ta::placeholder { color: var(--muted); font-style: italic; font-size: .82rem; }
 
     .autosave-indicator {
       font-size: .72rem; color: var(--muted);
@@ -335,6 +384,12 @@
     .doc-viewer .md-blockquote { border-left: 3px solid var(--border); padding-left: .75rem; color: var(--muted); margin: .4rem 0; }
     .doc-viewer .md-speaker { font-weight: 600; color: var(--accent2); }
     .doc-viewer .doc-loading { text-align: center; color: var(--muted); padding: 2rem; font-size: .85rem; }
+    .doc-viewer .prd-table-wrap { margin: .5rem 0; border-radius: 4px; border: 1px solid var(--border); overflow-x: auto; }
+    .doc-viewer .prd-table { font-size: .8rem; }
+    .doc-viewer .prd-table th { background: var(--surface); padding: .35rem .65rem; font-size: .74rem; color: var(--muted); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .doc-viewer .prd-table td { padding: .32rem .65rem; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); line-height: 1.5; }
+    .doc-viewer .prd-table td:last-child, .doc-viewer .prd-table th:last-child { border-right: none; }
+    .doc-viewer .prd-table tbody tr:last-child td { border-bottom: none; }
 
     /* ── Download bar ── */
     .download-bar {
@@ -362,7 +417,7 @@
       #print-content h1 { font-size: 18pt; margin-bottom: 8pt; }
       #print-content h2 { font-size: 13pt; margin: 12pt 0 4pt; border-bottom: 1px solid #ccc; padding-bottom: 3pt; }
       #print-content p, #print-content pre { font-size: 10pt; line-height: 1.5; margin-bottom: 6pt; }
-      #print-content .cipher-print { font-family: Courier, monospace; font-size: 8pt; word-break: break-all; border: 1px solid #ccc; padding: 6pt; margin: 6pt 0; }
+      #print-content .cipher-print { font-family: Courier, monospace; font-size: 7pt; word-break: break-all; white-space: pre-wrap; overflow-wrap: break-word; border: 1px solid #ccc; padding: 6pt; margin: 6pt 0; max-width: 100%; }
       #print-content .print-meta { font-size: 9pt; color: #555; margin-bottom: 12pt; }
       #print-content .section-break { border: none; border-top: 1px solid #ccc; margin: 10pt 0; }
       @page { margin: 2cm; }
@@ -782,19 +837,19 @@
 
     <!-- Tab bar -->
     <div class="tab-bar">
-      <button class="tab active" id="tab-btn-prd" onclick="switchTab('prd')">
-        <i data-lucide="file-edit" class="icon-xs"></i> PRD Editable
+      <button class="tab active" id="tab-btn-instruc" onclick="switchTab('instruc')">
+        <i data-lucide="book-open" class="icon-xs"></i> Instrucciones
       </button>
       <button class="tab" id="tab-btn-trans" onclick="switchTab('trans')">
         <i data-lucide="message-square" class="icon-xs"></i> Transcripción
       </button>
-      <button class="tab" id="tab-btn-instruc" onclick="switchTab('instruc')">
-        <i data-lucide="book-open" class="icon-xs"></i> Instrucciones
+      <button class="tab" id="tab-btn-prd" onclick="switchTab('prd')">
+        <i data-lucide="file-edit" class="icon-xs"></i> PRD Editable
       </button>
     </div>
 
     <!-- TAB: PRD Editable -->
-    <div class="tab-content active" id="tab-prd">
+    <div class="tab-content" id="tab-prd">
 
       <!-- Conversation link -->
       <div class="conv-link-box">
@@ -854,7 +909,7 @@
     </div>
 
     <!-- TAB: Instrucciones -->
-    <div class="tab-content" id="tab-instruc">
+    <div class="tab-content active" id="tab-instruc">
       <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;">
         <span style="font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:.3rem;">
           <i data-lucide="book-open" class="icon-xs"></i> 05_INSTRUCCIONES_CANDIDATO.md · Solo lectura
@@ -934,8 +989,9 @@ let p2ElapsedSecs   = 0;
 let p2Paused        = false;
 const P2_TOTAL      = 2 * 60 * 60;
 
-let prdSections = [];  // [{header, content}] parsed from PRD markdown
-let convLink    = '';
+let prdSections  = [];  // [{header, content, isPreamble}] parsed from PRD markdown
+let convLink     = '';
+const fieldCounters = {}; // tracks inline field indices per section
 
 // ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -1304,66 +1360,64 @@ function renderDocs(docs) {
   initIcons();
 }
 
-// ── Markdown to DOM (safe, no innerHTML with untrusted content) ──────────
+// ── Markdown to DOM (safe, no innerHTML; while-loop for table batching) ──
 function renderMarkdown(text, container) {
   container.replaceChildren();
   if (!text) { container.appendChild(makeEl('p','doc-loading','(Sin contenido)')); return; }
   const lines = text.split('\n');
-  let currentUL = null;
+  let i = 0;
+  let currentUL  = null;
+  let inCodeBlock = false;
+  let codeLines   = [];
 
-  lines.forEach(line => {
+  while (i < lines.length) {
+    const line    = lines[i];
     const trimmed = line.trim();
 
-    if (trimmed === '---' || trimmed === '***') {
-      currentUL = null;
-      container.appendChild(makeEl('hr','md-hr'));
-      return;
-    }
-    if (line.startsWith('# ')) {
-      currentUL = null;
-      container.appendChild(makeEl('h2','md-h1', line.slice(2)));
-      return;
-    }
-    if (line.startsWith('## ')) {
-      currentUL = null;
-      container.appendChild(makeEl('h2','md-h2', line.slice(3)));
-      return;
-    }
-    if (line.startsWith('### ')) {
-      currentUL = null;
-      container.appendChild(makeEl('h3','md-h3', line.slice(4)));
-      return;
-    }
-    if (line.startsWith('#### ')) {
-      currentUL = null;
-      container.appendChild(makeEl('h3','md-h3', line.slice(5)));
-      return;
-    }
-    if (line.startsWith('- ') || line.startsWith('* ')) {
-      if (!currentUL) {
-        currentUL = document.createElement('ul');
-        currentUL.className = 'md-list';
-        container.appendChild(currentUL);
+    // Code blocks
+    if (trimmed.startsWith('```')) {
+      if (!inCodeBlock) { inCodeBlock = true; codeLines = []; }
+      else {
+        const pre = makeEl('pre','md-pre');
+        pre.textContent = codeLines.join('\n');
+        container.appendChild(pre);
+        inCodeBlock = false; codeLines = [];
       }
-      const li = document.createElement('li');
-      appendInline(li, line.slice(2));
-      currentUL.appendChild(li);
-      return;
+      currentUL = null; i++; continue;
     }
+    if (inCodeBlock) { codeLines.push(line); i++; continue; }
+
+    // Tables (collect consecutive | lines)
     if (line.startsWith('|')) {
       currentUL = null;
-      const pre = makeEl('pre','md-pre', line);
-      container.appendChild(pre);
-      return;
+      const tableLines = [];
+      while (i < lines.length && lines[i].trim().startsWith('|')) {
+        tableLines.push(lines[i]); i++;
+      }
+      const wrap = document.createElement('div');
+      wrap.className = 'prd-table-wrap';
+      wrap.appendChild(buildTable(tableLines));
+      container.appendChild(wrap);
+      continue;
     }
-    if (line.startsWith('```')) {
-      currentUL = null;
-      return; // skip code fence markers
+
+    if (trimmed === '---' || trimmed === '***') {
+      currentUL = null; container.appendChild(makeEl('hr','md-hr')); i++; continue;
     }
-    if (trimmed === '') {
-      currentUL = null;
-      return;
+    if (line.startsWith('# '))   { currentUL = null; const el = makeEl('h2','md-h1'); appendInline(el, line.slice(2));  container.appendChild(el); i++; continue; }
+    if (line.startsWith('## '))  { currentUL = null; const el = makeEl('h2','md-h2'); appendInline(el, line.slice(3));  container.appendChild(el); i++; continue; }
+    if (line.startsWith('### ')) { currentUL = null; const el = makeEl('h3','md-h3'); appendInline(el, line.slice(4));  container.appendChild(el); i++; continue; }
+    if (line.startsWith('#### ')){ currentUL = null; const el = makeEl('h3','md-h3'); appendInline(el, line.slice(5));  container.appendChild(el); i++; continue; }
+
+    if (line.startsWith('- ') || line.startsWith('* ')) {
+      if (!currentUL) { currentUL = document.createElement('ul'); currentUL.className = 'md-list'; container.appendChild(currentUL); }
+      const li = document.createElement('li');
+      appendInline(li, line.slice(2));
+      currentUL.appendChild(li); i++; continue;
     }
+
+    if (trimmed === '') { currentUL = null; i++; continue; }
+
     // Dialog lines [00:00:15] Speaker:
     const dialogMatch = line.match(/^\*?\*?\[[\d:]+\]\s+([\w\s]+):\*?\*?\s*(.*)/);
     if (dialogMatch) {
@@ -1376,15 +1430,16 @@ function renderMarkdown(text, container) {
       p.appendChild(speaker);
       p.appendChild(document.createTextNode(dialogMatch[2]));
       container.appendChild(p);
-      return;
+      i++; continue;
     }
+
     // Regular paragraph
     currentUL = null;
-    const p = document.createElement('p');
-    p.className = 'md-p';
+    const p = makeEl('p','md-p');
     appendInline(p, line);
     container.appendChild(p);
-  });
+    i++;
+  }
 }
 
 // Render inline bold/italic safely using DOM
@@ -1411,16 +1466,24 @@ function makeEl(tag, cls, text) {
 // ── PRD parser & editor ───────────────────────────────────────────────────
 function parsePRD(markdown) {
   prdSections = [];
+  Object.keys(fieldCounters).forEach(k => delete fieldCounters[k]);
   if (!markdown) return;
+
+  // Split into sections: preamble + ## N. numbered sections
   const parts = markdown.split(/(?=\n## \d+\.)/);
   parts.forEach(part => {
     const trimmed = part.trim();
     if (!trimmed) return;
-    const lines  = trimmed.split('\n');
-    const header = lines[0].replace(/^#+ /, '');
-    const content = lines.slice(1).join('\n').trim();
-    if (header) prdSections.push({ header, content });
+    const lines = trimmed.split('\n');
+    const headerMatch = lines[0].match(/^## (\d+\.\s+.+)/);
+    if (headerMatch) {
+      prdSections.push({ header: headerMatch[1], content: lines.slice(1).join('\n').trim(), isPreamble: false });
+    } else {
+      // Preamble (title + metadata)
+      prdSections.push({ header: 'Encabezado del documento', content: trimmed, isPreamble: true });
+    }
   });
+
   renderPRDEditor();
 }
 
@@ -1429,32 +1492,211 @@ function renderPRDEditor() {
   container.replaceChildren();
 
   prdSections.forEach((sec, i) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'prd-sec';
+    const savedCompletion = localStorage.getItem(LS.prd + i) || '';
 
+    const wrapper = document.createElement('div');
+    wrapper.className = 'prd-sec' + (savedCompletion.trim() ? ' has-completion' : '');
+
+    // Header
     const hdr = document.createElement('div');
     hdr.className = 'prd-sec-header';
     const icon = document.createElement('i');
-    icon.dataset.lucide = 'chevron-right';
+    icon.dataset.lucide = sec.isPreamble ? 'file-text' : 'chevron-right';
     icon.className = 'icon-xs';
     hdr.appendChild(icon);
     hdr.appendChild(document.createTextNode(' ' + sec.header));
 
+    // Read-only content (fixed)
+    const readonlyDiv = document.createElement('div');
+    readonlyDiv.className = 'prd-sec-readonly';
+    renderPRDContent(sec.content, readonlyDiv, i);
+
+    // Completion zone
+    const editZone = document.createElement('div');
+    editZone.className = 'prd-sec-editzone';
+
+    const editLabel = document.createElement('div');
+    editLabel.className = 'prd-edit-label';
+    const editIcon = document.createElement('i');
+    editIcon.dataset.lucide = 'pencil';
+    editIcon.className = 'icon-xs';
+    editLabel.appendChild(editIcon);
+    editLabel.appendChild(document.createTextNode(' Tu respuesta / completar'));
+
     const ta = document.createElement('textarea');
-    ta.rows = Math.max(6, Math.ceil(sec.content.length / 80));
-    const saved = localStorage.getItem(LS.prd + i);
-    ta.value = saved !== null ? saved : sec.content;
+    ta.className = 'prd-edit-ta';
+    ta.placeholder = 'Escribe aquí tu análisis, decisiones o respuestas para esta sección…';
+    ta.value = savedCompletion;
     ta.addEventListener('input', () => {
       localStorage.setItem(LS.prd + i, ta.value);
+      wrapper.classList.toggle('has-completion', ta.value.trim().length > 0);
       showAutosaved();
     });
 
+    editZone.appendChild(editLabel);
+    editZone.appendChild(ta);
+
     wrapper.appendChild(hdr);
-    wrapper.appendChild(ta);
+    wrapper.appendChild(readonlyDiv);
+    wrapper.appendChild(editZone);
     container.appendChild(wrapper);
   });
 
   initIcons();
+}
+
+// ── PRD content renderer (markdown → DOM, con tablas y campos [COMPLETAR]) ──
+function renderPRDContent(text, container, sectionIdx) {
+  container.replaceChildren();
+  if (!text) return;
+  if (!fieldCounters[sectionIdx]) fieldCounters[sectionIdx] = 0;
+
+  const lines = text.split('\n');
+  let i = 0;
+  let currentUL = null;
+  let inCodeBlock = false;
+  let codeLines   = [];
+
+  while (i < lines.length) {
+    const line    = lines[i];
+    const trimmed = line.trim();
+
+    // Code blocks
+    if (trimmed.startsWith('```')) {
+      if (!inCodeBlock) { inCodeBlock = true; codeLines = []; }
+      else {
+        const pre = makeEl('pre', 'md-pre');
+        pre.textContent = codeLines.join('\n');
+        container.appendChild(pre);
+        inCodeBlock = false; codeLines = [];
+      }
+      currentUL = null; i++; continue;
+    }
+    if (inCodeBlock) { codeLines.push(line); i++; continue; }
+
+    // Table (collect consecutive | lines)
+    if (trimmed.startsWith('|')) {
+      currentUL = null;
+      const tableLines = [];
+      while (i < lines.length && lines[i].trim().startsWith('|')) {
+        tableLines.push(lines[i]); i++;
+      }
+      const wrap = document.createElement('div');
+      wrap.className = 'prd-table-wrap';
+      wrap.appendChild(buildTable(tableLines));
+      container.appendChild(wrap);
+      continue;
+    }
+
+    // HR
+    if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
+      currentUL = null; container.appendChild(makeEl('hr', 'md-hr')); i++; continue;
+    }
+
+    // Headers
+    if (line.startsWith('# '))   { currentUL = null; const el = makeEl('h2','md-h1'); appendInlineFields(el, line.slice(2), sectionIdx);  container.appendChild(el); i++; continue; }
+    if (line.startsWith('## '))  { currentUL = null; const el = makeEl('h3','md-h2'); appendInlineFields(el, line.slice(3), sectionIdx);  container.appendChild(el); i++; continue; }
+    if (line.startsWith('### ')) { currentUL = null; const el = makeEl('h4','md-h3'); appendInlineFields(el, line.slice(4), sectionIdx);  container.appendChild(el); i++; continue; }
+    if (line.startsWith('#### ')){ currentUL = null; const el = makeEl('h5','md-h3'); appendInlineFields(el, line.slice(5), sectionIdx);  container.appendChild(el); i++; continue; }
+
+    // Lists
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      if (!currentUL) { currentUL = document.createElement('ul'); currentUL.className = 'md-list'; container.appendChild(currentUL); }
+      const li = document.createElement('li');
+      appendInlineFields(li, trimmed.slice(2), sectionIdx);
+      currentUL.appendChild(li); i++; continue;
+    }
+
+    // Empty
+    if (trimmed === '') { currentUL = null; i++; continue; }
+
+    // Paragraph
+    currentUL = null;
+    const p = makeEl('p', 'md-p');
+    appendInlineFields(p, line, sectionIdx);
+    container.appendChild(p);
+    i++;
+  }
+}
+
+// Renders inline text with [COMPLETAR] / [NOMBRE DEL CANDIDATO] as editable inputs
+function appendInlineFields(parent, text, sectionIdx) {
+  const FIELD_PATTERN = /(\[NOMBRE DEL CANDIDATO\]|\[FECHA\]|\[COMPLETAR[^\]]*\]|\[¿HAY MÁS ROLES\?\])/g;
+  const parts = text.split(FIELD_PATTERN);
+
+  parts.forEach(part => {
+    if (!part) return;
+    if (FIELD_PATTERN.test(part) || /^\[COMPLETAR/.test(part) || part === '[NOMBRE DEL CANDIDATO]' || part === '[FECHA]' || part === '[¿HAY MÁS ROLES?]') {
+      FIELD_PATTERN.lastIndex = 0; // reset regex state
+      const fIdx    = fieldCounters[sectionIdx]++;
+      const fieldKey = LS.prd + sectionIdx + '_f' + fIdx;
+
+      const inp = document.createElement('input');
+      inp.type  = 'text';
+      inp.className = 'prd-inline-field';
+
+      // Auto-fill known fields
+      if (part === '[NOMBRE DEL CANDIDATO]') {
+        inp.placeholder = 'Tu nombre completo';
+        if (candidate && candidate.name && !localStorage.getItem(fieldKey)) {
+          inp.value = candidate.name;
+          localStorage.setItem(fieldKey, candidate.name);
+        } else {
+          inp.value = localStorage.getItem(fieldKey) || '';
+        }
+      } else if (part === '[FECHA]') {
+        inp.placeholder = 'dd/mm/aaaa';
+        if (!localStorage.getItem(fieldKey)) {
+          const today = new Date().toLocaleDateString('es-MX');
+          inp.value = today;
+          localStorage.setItem(fieldKey, today);
+        } else {
+          inp.value = localStorage.getItem(fieldKey) || '';
+        }
+      } else {
+        inp.placeholder = 'Completar…';
+        inp.value = localStorage.getItem(fieldKey) || '';
+      }
+
+      inp.addEventListener('input', () => {
+        localStorage.setItem(fieldKey, inp.value);
+        showAutosaved();
+      });
+      parent.appendChild(inp);
+    } else {
+      FIELD_PATTERN.lastIndex = 0;
+      appendInline(parent, part);
+    }
+  });
+  FIELD_PATTERN.lastIndex = 0;
+}
+
+// Build a markdown table into a proper HTML <table>
+function buildTable(lines) {
+  const table  = document.createElement('table');
+  table.className = 'prd-table';
+  const thead = document.createElement('thead');
+  const tbody = document.createElement('tbody');
+  table.appendChild(thead);
+  table.appendChild(tbody);
+
+  let headerDone = false;
+  lines.forEach(line => {
+    const raw   = line.trim().replace(/^\||\|$/g, ''); // strip leading/trailing |
+    const cells = raw.split('|');
+    // Separator row (e.g. |---|---|)
+    if (cells.every(c => /^[\s\-:|]+$/.test(c))) { headerDone = true; return; }
+
+    const tr = document.createElement('tr');
+    cells.forEach(cell => {
+      const el = document.createElement(headerDone ? 'td' : 'th');
+      appendInline(el, cell.trim());
+      tr.appendChild(el);
+    });
+    (headerDone ? tbody : thead).appendChild(tr);
+  });
+
+  return table;
 }
 
 function showAutosaved() {
@@ -1477,11 +1719,13 @@ function saveConvLink() {
 // ── Build PRD text from current editor state ──────────────────────────────
 function buildPRDText() {
   let text = '';
+  const tas = document.getElementById('prd-editor-sections').querySelectorAll('.prd-edit-ta');
   prdSections.forEach((sec, i) => {
-    const ta    = document.getElementById('prd-editor-sections')
-                           .querySelectorAll('textarea')[i];
-    const content = ta ? ta.value : sec.content;
-    text += '## ' + sec.header + '\n\n' + content + '\n\n';
+    const completion = (tas[i] ? tas[i].value : '').trim();
+    text += (sec.isPreamble ? '' : '## ' + sec.header + '\n\n');
+    text += sec.content + '\n\n';
+    if (completion) text += '### Mi completación:\n\n' + completion + '\n\n';
+    text += '---\n\n';
   });
   return text;
 }
@@ -1497,27 +1741,39 @@ function safeText(str) {
 function downloadPDF() {
   pauseP2Timer();
 
-  // Build print content using DOM
-  const metaEl  = document.getElementById('pc-meta');
+  const metaEl   = document.getElementById('pc-meta');
   const cipherEl = document.getElementById('pc-cipher');
-  const linkEl  = document.getElementById('pc-link');
-  const prdEl   = document.getElementById('pc-prd-sections');
+  const linkEl   = document.getElementById('pc-link');
+  const prdEl    = document.getElementById('pc-prd-sections');
 
-  metaEl.textContent  = 'Candidato: ' + (candidate ? candidate.name : '—') + ' · Fecha: ' + new Date().toLocaleDateString('es-MX') + ' · Tiempo Parte 2: ' + formatP2Elapsed();
+  metaEl.textContent   = 'Candidato: ' + (candidate ? candidate.name : '—') + ' · Fecha: ' + new Date().toLocaleDateString('es-MX') + ' · Tiempo Parte 2: ' + formatP2Elapsed();
+  // Cipher must wrap completely — no ellipsis, no truncation
   cipherEl.textContent = p1Cipher || '(no disponible — completa la Parte 1 primero)';
   linkEl.textContent   = convLink || 'No proporcionado';
 
   prdEl.replaceChildren();
+  const tas = document.getElementById('prd-editor-sections').querySelectorAll('.prd-edit-ta');
   prdSections.forEach((sec, i) => {
-    const tas = document.getElementById('prd-editor-sections').querySelectorAll('textarea');
-    const content = tas[i] ? tas[i].value : sec.content;
-    const h2 = document.createElement('h2');
-    h2.textContent = sec.header;
+    const completion = (tas[i] ? tas[i].value : '').trim();
+    if (!sec.isPreamble) {
+      const h2 = document.createElement('h2');
+      h2.textContent = sec.header;
+      prdEl.appendChild(h2);
+    }
     const pre = document.createElement('pre');
-    pre.style.cssText = 'white-space:pre-wrap;font-family:Georgia,serif;font-size:10pt;';
-    pre.textContent = content;
-    prdEl.appendChild(h2);
+    pre.style.cssText = 'white-space:pre-wrap;font-family:Georgia,serif;font-size:10pt;word-break:break-word;';
+    pre.textContent = sec.content;
     prdEl.appendChild(pre);
+    if (completion) {
+      const h3 = document.createElement('h3');
+      h3.style.cssText = 'font-size:11pt;margin-top:8pt;color:#1f6feb;';
+      h3.textContent = 'Mi completación:';
+      const compPre = document.createElement('pre');
+      compPre.style.cssText = 'white-space:pre-wrap;font-family:Georgia,serif;font-size:10pt;border-left:2px solid #1f6feb;padding-left:8pt;';
+      compPre.textContent = completion;
+      prdEl.appendChild(h3);
+      prdEl.appendChild(compPre);
+    }
   });
 
   window.print();
@@ -1534,10 +1790,17 @@ function downloadWord() {
   const cipher  = p1Cipher || '(no disponible)';
 
   // Build Word-compatible HTML using safe text escaping
+  const tas = document.getElementById('prd-editor-sections').querySelectorAll('.prd-edit-ta');
   const prdHtml = prdSections.map((sec, i) => {
-    const tas = document.getElementById('prd-editor-sections').querySelectorAll('textarea');
-    const content = (tas[i] ? tas[i].value : sec.content);
-    return '<h2>' + safeText(sec.header) + '</h2><pre style="white-space:pre-wrap;font-family:Arial;font-size:10pt;">' + safeText(content) + '</pre>';
+    const completion = (tas[i] ? tas[i].value : '').trim();
+    let html = '';
+    if (!sec.isPreamble) html += '<h2>' + safeText(sec.header) + '</h2>';
+    html += '<pre style="white-space:pre-wrap;font-family:Arial;font-size:10pt;word-break:break-word;">' + safeText(sec.content) + '</pre>';
+    if (completion) {
+      html += '<h3 style="color:#1f6feb;font-size:11pt;">Mi completación:</h3>';
+      html += '<pre style="white-space:pre-wrap;font-family:Arial;font-size:10pt;border-left:3px solid #1f6feb;padding-left:8pt;">' + safeText(completion) + '</pre>';
+    }
+    return html;
   }).join('\n');
 
   const docHtml = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
