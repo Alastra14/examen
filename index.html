@@ -409,6 +409,55 @@
     .p2-info-item:last-child { border-bottom: none; }
     .p2-info-label { color: var(--muted); min-width: 28px; display: flex; justify-content: center; }
 
+    /* ── PRD Wizard navigation ── */
+    .prd-wizard-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .6rem .85rem; border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .prd-wizard-counter { font-size: .78rem; color: var(--muted); font-style: italic; }
+
+    /* PRD — hint callout for full-line COMPLETAR */
+    .prd-hint-box {
+      background: rgba(210,153,34,.08); border: 1px solid rgba(210,153,34,.3);
+      border-radius: 4px; padding: .5rem .75rem; margin: .4rem 0;
+      font-size: .76rem; color: var(--warn); line-height: 1.55;
+    }
+    .prd-hint-box strong { color: var(--orange); }
+
+    /* PRD — large textarea for full-line COMPLETAR */
+    .prd-completar-ta {
+      width: 100%; background: var(--surface); border: 1px solid rgba(56,139,253,.35);
+      border-radius: 4px; color: var(--text); font-family: var(--font);
+      font-size: .875rem; line-height: 1.75; padding: .65rem .85rem;
+      resize: vertical; outline: none; min-height: 110px; display: block; margin-bottom: .4rem;
+    }
+    .prd-completar-ta:focus {
+      border-color: var(--accent); background: rgba(56,139,253,.05);
+      box-shadow: 0 0 0 2px rgba(56,139,253,.2);
+    }
+    .prd-completar-ta::placeholder { color: var(--muted); font-style: italic; font-size: .82rem; }
+
+    /* PRD — editable table cell input */
+    .prd-cell-input {
+      width: 100%; min-width: 80px; background: rgba(56,139,253,.07);
+      border: 1px dashed rgba(56,139,253,.4); border-radius: 3px;
+      color: var(--text); font-family: var(--font); font-size: .79rem;
+      padding: .22rem .45rem; outline: none; box-sizing: border-box;
+    }
+    .prd-cell-input:focus { background: rgba(56,139,253,.14); border-color: var(--accent); border-style: solid; }
+    .prd-cell-input::placeholder { color: var(--muted); font-style: italic; }
+
+    /* PRD — add row button */
+    .prd-add-row-wrap { padding: .3rem .4rem .4rem; }
+    .prd-add-row-btn {
+      display: inline-flex; align-items: center; gap: .3rem;
+      padding: .3rem .7rem; font-size: .75rem; font-family: var(--font);
+      color: var(--accent2); border: 1px dashed rgba(56,139,253,.4);
+      border-radius: 4px; background: rgba(56,139,253,.05); cursor: pointer;
+    }
+    .prd-add-row-btn:hover { background: rgba(56,139,253,.12); }
+
     /* ── Print only ── */
     @media print {
       body > * { display: none !important; }
@@ -992,6 +1041,8 @@ const P2_TOTAL      = 2 * 60 * 60;
 let prdSections  = [];  // [{header, content, isPreamble}] parsed from PRD markdown
 let convLink     = '';
 const fieldCounters = {}; // tracks inline field indices per section
+const prdTableCounters = {}; // tracks table indices per section
+let prdCurrentSec = 0;
 
 // ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -1394,10 +1445,7 @@ function renderMarkdown(text, container) {
       while (i < lines.length && lines[i].trim().startsWith('|')) {
         tableLines.push(lines[i]); i++;
       }
-      const wrap = document.createElement('div');
-      wrap.className = 'prd-table-wrap';
-      wrap.appendChild(buildTable(tableLines));
-      container.appendChild(wrap);
+      container.appendChild(buildTable(tableLines));
       continue;
     }
 
@@ -1467,6 +1515,8 @@ function makeEl(tag, cls, text) {
 function parsePRD(markdown) {
   prdSections = [];
   Object.keys(fieldCounters).forEach(k => delete fieldCounters[k]);
+  Object.keys(prdTableCounters).forEach(k => delete prdTableCounters[k]);
+  prdCurrentSec = 0;
   if (!markdown) return;
 
   // Split into sections: preamble + ## N. numbered sections
@@ -1490,59 +1540,81 @@ function parsePRD(markdown) {
 function renderPRDEditor() {
   const container = document.getElementById('prd-editor-sections');
   container.replaceChildren();
+  Object.keys(prdTableCounters).forEach(k => delete prdTableCounters[k]);
+  Object.keys(fieldCounters).forEach(k => delete fieldCounters[k]);
 
   prdSections.forEach((sec, i) => {
-    const savedCompletion = localStorage.getItem(LS.prd + i) || '';
+    prdTableCounters[i] = 0;
+    fieldCounters[i] = 0;
 
     const wrapper = document.createElement('div');
-    wrapper.className = 'prd-sec' + (savedCompletion.trim() ? ' has-completion' : '');
+    wrapper.className = 'prd-sec';
+    wrapper.id = 'prd-sec-' + i;
+    wrapper.style.display = (i === prdCurrentSec) ? 'block' : 'none';
 
     // Header
     const hdr = document.createElement('div');
     hdr.className = 'prd-sec-header';
     const icon = document.createElement('i');
-    icon.dataset.lucide = sec.isPreamble ? 'file-text' : 'chevron-right';
+    icon.dataset.lucide = sec.isPreamble ? 'file-text' : 'file-edit';
     icon.className = 'icon-xs';
     hdr.appendChild(icon);
     hdr.appendChild(document.createTextNode(' ' + sec.header));
 
-    // Read-only content (fixed)
-    const readonlyDiv = document.createElement('div');
-    readonlyDiv.className = 'prd-sec-readonly';
-    renderPRDContent(sec.content, readonlyDiv, i);
+    // Content area (with inline textareas and editable tables)
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'prd-sec-readonly';
+    renderPRDContent(sec.content, contentDiv, i);
 
-    // Completion zone
-    const editZone = document.createElement('div');
-    editZone.className = 'prd-sec-editzone';
+    // Wizard nav
+    const nav = document.createElement('div');
+    nav.className = 'prd-wizard-nav';
 
-    const editLabel = document.createElement('div');
-    editLabel.className = 'prd-edit-label';
-    const editIcon = document.createElement('i');
-    editIcon.dataset.lucide = 'pencil';
-    editIcon.className = 'icon-xs';
-    editLabel.appendChild(editIcon);
-    editLabel.appendChild(document.createTextNode(' Tu respuesta / completar'));
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn btn-ghost';
+    prevBtn.style.fontSize = '.8rem';
+    prevBtn.disabled = (i === 0);
+    const prevIcon = document.createElement('i');
+    prevIcon.dataset.lucide = 'chevron-left';
+    prevIcon.className = 'icon-sm';
+    prevBtn.appendChild(prevIcon);
+    prevBtn.appendChild(document.createTextNode(' Anterior'));
+    prevBtn.addEventListener('click', () => prdNav(-1));
 
-    const ta = document.createElement('textarea');
-    ta.className = 'prd-edit-ta';
-    ta.placeholder = 'Escribe aquí tu análisis, decisiones o respuestas para esta sección…';
-    ta.value = savedCompletion;
-    ta.addEventListener('input', () => {
-      localStorage.setItem(LS.prd + i, ta.value);
-      wrapper.classList.toggle('has-completion', ta.value.trim().length > 0);
-      showAutosaved();
-    });
+    const counter = document.createElement('span');
+    counter.className = 'prd-wizard-counter';
+    counter.textContent = 'Sección ' + (i + 1) + ' de ' + prdSections.length;
 
-    editZone.appendChild(editLabel);
-    editZone.appendChild(ta);
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-ghost';
+    nextBtn.style.fontSize = '.8rem';
+    nextBtn.disabled = (i === prdSections.length - 1);
+    nextBtn.appendChild(document.createTextNode('Siguiente '));
+    const nextIcon = document.createElement('i');
+    nextIcon.dataset.lucide = 'chevron-right';
+    nextIcon.className = 'icon-sm';
+    nextBtn.appendChild(nextIcon);
+    nextBtn.addEventListener('click', () => prdNav(1));
+
+    nav.appendChild(prevBtn);
+    nav.appendChild(counter);
+    nav.appendChild(nextBtn);
 
     wrapper.appendChild(hdr);
-    wrapper.appendChild(readonlyDiv);
-    wrapper.appendChild(editZone);
+    wrapper.appendChild(contentDiv);
+    wrapper.appendChild(nav);
     container.appendChild(wrapper);
   });
 
   initIcons();
+}
+
+function prdNav(dir) {
+  const old = document.getElementById('prd-sec-' + prdCurrentSec);
+  if (old) old.style.display = 'none';
+  prdCurrentSec = Math.max(0, Math.min(prdSections.length - 1, prdCurrentSec + dir));
+  const next = document.getElementById('prd-sec-' + prdCurrentSec);
+  if (next) { next.style.display = 'block'; next.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
 }
 
 // ── PRD content renderer (markdown → DOM, con tablas y campos [COMPLETAR]) ──
@@ -1574,17 +1646,16 @@ function renderPRDContent(text, container, sectionIdx) {
     }
     if (inCodeBlock) { codeLines.push(line); i++; continue; }
 
-    // Table (collect consecutive | lines)
+    // Table (collect consecutive | lines) — editable in PRD editor
     if (trimmed.startsWith('|')) {
       currentUL = null;
       const tableLines = [];
       while (i < lines.length && lines[i].trim().startsWith('|')) {
         tableLines.push(lines[i]); i++;
       }
-      const wrap = document.createElement('div');
-      wrap.className = 'prd-table-wrap';
-      wrap.appendChild(buildTable(tableLines));
-      container.appendChild(wrap);
+      const tIdx = prdTableCounters[sectionIdx] !== undefined ? prdTableCounters[sectionIdx]++ : 0;
+      const tableResult = buildTable(tableLines, true, sectionIdx, tIdx);
+      container.appendChild(tableResult);
       continue;
     }
 
@@ -1594,26 +1665,54 @@ function renderPRDContent(text, container, sectionIdx) {
     }
 
     // Headers
-    if (line.startsWith('# '))   { currentUL = null; const el = makeEl('h2','md-h1'); appendInlineFields(el, line.slice(2), sectionIdx);  container.appendChild(el); i++; continue; }
-    if (line.startsWith('## '))  { currentUL = null; const el = makeEl('h3','md-h2'); appendInlineFields(el, line.slice(3), sectionIdx);  container.appendChild(el); i++; continue; }
-    if (line.startsWith('### ')) { currentUL = null; const el = makeEl('h4','md-h3'); appendInlineFields(el, line.slice(4), sectionIdx);  container.appendChild(el); i++; continue; }
-    if (line.startsWith('#### ')){ currentUL = null; const el = makeEl('h5','md-h3'); appendInlineFields(el, line.slice(5), sectionIdx);  container.appendChild(el); i++; continue; }
+    if (line.startsWith('# '))   { currentUL = null; const el = makeEl('h2','md-h1'); appendInline(el, line.slice(2));  container.appendChild(el); i++; continue; }
+    if (line.startsWith('## '))  { currentUL = null; const el = makeEl('h3','md-h2'); appendInline(el, line.slice(3));  container.appendChild(el); i++; continue; }
+    if (line.startsWith('### ')) { currentUL = null; const el = makeEl('h4','md-h3'); appendInline(el, line.slice(4));  container.appendChild(el); i++; continue; }
+    if (line.startsWith('#### ')){ currentUL = null; const el = makeEl('h5','md-h3'); appendInline(el, line.slice(5));  container.appendChild(el); i++; continue; }
 
     // Lists
     if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
       if (!currentUL) { currentUL = document.createElement('ul'); currentUL.className = 'md-list'; container.appendChild(currentUL); }
       const li = document.createElement('li');
-      appendInlineFields(li, trimmed.slice(2), sectionIdx);
+      appendInline(li, trimmed.slice(2));
       currentUL.appendChild(li); i++; continue;
     }
 
     // Empty
     if (trimmed === '') { currentUL = null; i++; continue; }
 
-    // Paragraph
+    // Full-line COMPLETAR → hint callout + large textarea
+    const fullCompletar = trimmed.match(/^\*?\[COMPLETAR([^\]]*)\]\*?$/);
+    if (fullCompletar) {
+      currentUL = null;
+      const hintText = (fullCompletar[1] || '').replace(/^:\s*/, '');
+      const fIdx = fieldCounters[sectionIdx]++;
+      const fieldKey = LS.prd + sectionIdx + '_f' + fIdx;
+
+      if (hintText) {
+        const hintBox = document.createElement('div');
+        hintBox.className = 'prd-hint-box';
+        const strong = document.createElement('strong');
+        strong.textContent = 'Pista: ';
+        hintBox.appendChild(strong);
+        hintBox.appendChild(document.createTextNode(hintText));
+        container.appendChild(hintBox);
+      }
+
+      const ta = document.createElement('textarea');
+      ta.className = 'prd-completar-ta';
+      ta.rows = 5;
+      ta.placeholder = hintText || 'Escribe tu respuesta aquí…';
+      ta.value = localStorage.getItem(fieldKey) || '';
+      ta.addEventListener('input', () => { localStorage.setItem(fieldKey, ta.value); showAutosaved(); });
+      container.appendChild(ta);
+      i++; continue;
+    }
+
+    // Regular paragraph
     currentUL = null;
     const p = makeEl('p', 'md-p');
-    appendInlineFields(p, line, sectionIdx);
+    appendInline(p, line);
     container.appendChild(p);
     i++;
   }
@@ -1672,31 +1771,122 @@ function appendInlineFields(parent, text, sectionIdx) {
 }
 
 // Build a markdown table into a proper HTML <table>
-function buildTable(lines) {
+// editable=true: [COMPLETAR] cells become inputs; [¿HAY MÁS ROLES?] rows become "+ Agregar fila" button
+function buildTable(lines, editable, sectionIdx, tableIdx) {
+  const wrap = document.createElement('div');
+  wrap.className = 'prd-table-wrap';
+
   const table  = document.createElement('table');
   table.className = 'prd-table';
   const thead = document.createElement('thead');
   const tbody = document.createElement('tbody');
   table.appendChild(thead);
   table.appendChild(tbody);
+  wrap.appendChild(table);
 
   let headerDone = false;
+  let addRowNeeded = false;
+  let rowIdx = 0;
+  let colCount = 0;
+
   lines.forEach(line => {
-    const raw   = line.trim().replace(/^\||\|$/g, ''); // strip leading/trailing |
+    const raw   = line.trim().replace(/^\||\|$/g, '');
     const cells = raw.split('|');
     // Separator row (e.g. |---|---|)
-    if (cells.every(c => /^[\s\-:|]+$/.test(c))) { headerDone = true; return; }
+    if (cells.every(c => /^[\s\-:|]+$/.test(c))) { headerDone = true; colCount = cells.length; return; }
+
+    // Detect [¿HAY MÁS ROLES?] rows in editable mode → skip, show button instead
+    if (editable && cells.some(c => c.replace(/\*/g,'').trim().includes('¿HAY MÁS ROLES?'))) {
+      addRowNeeded = true; return;
+    }
 
     const tr = document.createElement('tr');
-    cells.forEach(cell => {
+    cells.forEach((cell, colIdx) => {
+      const cellTrimmed = cell.trim().replace(/^\*|\*$/g, '').trim();
       const el = document.createElement(headerDone ? 'td' : 'th');
-      appendInline(el, cell.trim());
+
+      if (editable && headerDone && /\[COMPLETAR[^\]]*\]/.test(cell)) {
+        const fieldKey = LS.prd + 'cell_' + sectionIdx + '_' + tableIdx + '_' + rowIdx + '_' + colIdx;
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = 'prd-cell-input';
+        inp.placeholder = 'Completar…';
+        inp.value = localStorage.getItem(fieldKey) || '';
+        inp.addEventListener('input', () => { localStorage.setItem(fieldKey, inp.value); showAutosaved(); });
+        el.appendChild(inp);
+      } else {
+        appendInline(el, cellTrimmed);
+      }
       tr.appendChild(el);
     });
+
     (headerDone ? tbody : thead).appendChild(tr);
+    if (headerDone) rowIdx++;
   });
 
-  return table;
+  if (editable && addRowNeeded) {
+    // Restore saved extra rows
+    const savedExtra = JSON.parse(localStorage.getItem(LS.prd + 'extra_' + sectionIdx + '_' + tableIdx) || '[]');
+    savedExtra.forEach((_, rr) => { addTableRow(tbody, colCount, sectionIdx, tableIdx, rowIdx + rr); });
+
+    const btnWrap = document.createElement('div');
+    btnWrap.className = 'prd-add-row-wrap';
+    const btn = document.createElement('button');
+    btn.className = 'prd-add-row-btn';
+    const plusIcon = document.createElement('i');
+    plusIcon.dataset.lucide = 'plus';
+    plusIcon.className = 'icon-xs';
+    btn.appendChild(plusIcon);
+    btn.appendChild(document.createTextNode(' Agregar fila'));
+    btn.addEventListener('click', () => {
+      const extra = JSON.parse(localStorage.getItem(LS.prd + 'extra_' + sectionIdx + '_' + tableIdx) || '[]');
+      extra.push(rowIdx + extra.length);
+      localStorage.setItem(LS.prd + 'extra_' + sectionIdx + '_' + tableIdx, JSON.stringify(extra));
+      addTableRow(tbody, colCount, sectionIdx, tableIdx, rowIdx + extra.length - 1);
+      initIcons();
+    });
+    btnWrap.appendChild(btn);
+    wrap.appendChild(btnWrap);
+  }
+
+  return wrap;
+}
+
+function addTableRow(tbody, colCount, sectionIdx, tableIdx, rowIdx) {
+  const tr = document.createElement('tr');
+  for (let c = 0; c < colCount; c++) {
+    const td = document.createElement('td');
+    const fieldKey = LS.prd + 'cell_' + sectionIdx + '_' + tableIdx + '_' + rowIdx + '_' + c;
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'prd-cell-input';
+    inp.placeholder = c === 0 ? 'Rol…' : 'Completar…';
+    inp.value = localStorage.getItem(fieldKey) || '';
+    inp.addEventListener('input', () => { localStorage.setItem(fieldKey, inp.value); showAutosaved(); });
+    td.appendChild(inp);
+    tr.appendChild(td);
+  }
+  tbody.appendChild(tr);
+  return tr;
+}
+
+// Collects all candidate input from a section (textareas + table cells)
+function getSecCompletion(secIdx) {
+  const wrapper = document.getElementById('prd-sec-' + secIdx);
+  if (!wrapper) return '';
+  const parts = [];
+  wrapper.querySelectorAll('.prd-completar-ta').forEach(ta => {
+    if (ta.value.trim()) parts.push(ta.value.trim());
+  });
+  wrapper.querySelectorAll('.prd-table tbody tr').forEach(row => {
+    const cells = [];
+    row.querySelectorAll('td').forEach(td => {
+      const inp = td.querySelector('.prd-cell-input');
+      cells.push(inp ? (inp.value.trim() || '—') : td.textContent.trim());
+    });
+    if (cells.some(c => c && c !== '—')) parts.push(cells.join(' | '));
+  });
+  return parts.join('\n');
 }
 
 function showAutosaved() {
@@ -1719,9 +1909,8 @@ function saveConvLink() {
 // ── Build PRD text from current editor state ──────────────────────────────
 function buildPRDText() {
   let text = '';
-  const tas = document.getElementById('prd-editor-sections').querySelectorAll('.prd-edit-ta');
   prdSections.forEach((sec, i) => {
-    const completion = (tas[i] ? tas[i].value : '').trim();
+    const completion = getSecCompletion(i);
     text += (sec.isPreamble ? '' : '## ' + sec.header + '\n\n');
     text += sec.content + '\n\n';
     if (completion) text += '### Mi completación:\n\n' + completion + '\n\n';
@@ -1752,9 +1941,8 @@ function downloadPDF() {
   linkEl.textContent   = convLink || 'No proporcionado';
 
   prdEl.replaceChildren();
-  const tas = document.getElementById('prd-editor-sections').querySelectorAll('.prd-edit-ta');
   prdSections.forEach((sec, i) => {
-    const completion = (tas[i] ? tas[i].value : '').trim();
+    const completion = getSecCompletion(i);
     if (!sec.isPreamble) {
       const h2 = document.createElement('h2');
       h2.textContent = sec.header;
@@ -1790,9 +1978,8 @@ function downloadWord() {
   const cipher  = p1Cipher || '(no disponible)';
 
   // Build Word-compatible HTML using safe text escaping
-  const tas = document.getElementById('prd-editor-sections').querySelectorAll('.prd-edit-ta');
   const prdHtml = prdSections.map((sec, i) => {
-    const completion = (tas[i] ? tas[i].value : '').trim();
+    const completion = getSecCompletion(i);
     let html = '';
     if (!sec.isPreamble) html += '<h2>' + safeText(sec.header) + '</h2>';
     html += '<pre style="white-space:pre-wrap;font-family:Arial;font-size:10pt;word-break:break-word;">' + safeText(sec.content) + '</pre>';
