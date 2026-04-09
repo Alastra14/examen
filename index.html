@@ -51,8 +51,42 @@
     }
     .screen-centered > .inner { width: 100%; max-width: 480px; }
 
-    /* Full screens (exam, part2) */
+    /* Full screens (exam) */
     .screen-full { padding: 1rem 1.5rem 2rem; max-width: 900px; margin: 0 auto; }
+
+    /* Part 2 — fixed viewport, no page scroll */
+    #screen-part2 {
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: .75rem 1rem;
+      max-width: 900px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+    #screen-part2 .exam-header { flex-shrink: 0; }
+    #screen-part2 .window-frame {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    #screen-part2 .tab-bar { flex-shrink: 0; }
+    #screen-part2 .tab-content.active {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    /* PRD tab — editor sections take all space, download bar sticks to bottom */
+    #tab-prd { display: flex; flex-direction: column; }
+    #prd-editor-sections { flex: 1; overflow-y: auto; min-height: 0; }
+    .download-bar { flex-shrink: 0; }
+    /* Agent link bar stays pinned at bottom */
+    #screen-part2 > div:last-of-type { flex-shrink: 0; margin-top: .5rem; }
 
     /* ── GH Card ── */
     .card {
@@ -372,7 +406,7 @@
     .autosave-indicator.saved { color: var(--success); }
 
     /* ── Read-only doc viewer ── */
-    .doc-viewer { padding: 1rem; max-height: 70vh; overflow-y: auto; }
+    .doc-viewer { padding: 1rem; overflow-y: auto; flex: 1; min-height: 0; }
     .doc-viewer .md-h1 { font-size: 1.1rem; font-weight: 700; margin: 1rem 0 .5rem; padding-bottom: .4rem; border-bottom: 1px solid var(--border); }
     .doc-viewer .md-h2 { font-size: .95rem; font-weight: 600; color: var(--accent2); margin: .9rem 0 .35rem; }
     .doc-viewer .md-h3 { font-size: .875rem; font-weight: 600; margin: .7rem 0 .25rem; color: var(--text); }
